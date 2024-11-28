@@ -1,0 +1,134 @@
+# 데이터 타입 출력
+df1.dtypes
+
+# 데이터 타입 변경 1개
+df1 = df.copy() # copy() 사용 안하면 안됨
+df1 = df1.astype({'칼럼명' : '자료형'})
+
+# 기초 통계량 구하기
+mpg_mean = df['mpg'].mean()
+mpg_median = df['mpg'].median()
+mpg_mode = df['mpg'].mode()
+
+# 산포도를 나타내는 값
+mpg_var = df['mpg'].var()
+mpg_std = df['mpg'].std()
+# IQR
+Q1 = df['mpg'].quantile(.25)
+Q3 = df['mpg'].quantile(.75)
+IQR = Q3 - Q1
+Q2 = df['mpg'].quantile(.50) = median 값과 동일
+
+# 범위(range) = 최대값 - 최소값
+mpg_max = df['mpg'].max()
+mpg_min = df['mpg'].min()
+mpg_range = mpg_max - mpg_min
+
+# 왜도: 좌우로 비대칭
+mpg_skew = df['mpg'].skew()
+
+# 첨도: 위아래로 뾰족한지
+mpg_kurt = df['mpg'].kurt()
+
+# 그룹화하여 계산하기
+df.groupby('species').mean() : species의 종별로 평균값을 보고 싶다
+
+# 데이터 인덱싱, 필터링, 정렬, 변경 등
+
+행/열 인덱싱: df.loc['행', '열']
+열만 인덱싱: df.loc[:, 'mpg']
+df.loc[0:3, ['mpg', 'cvl']] # 0, 1, 2, 3 포함
+
+# 열 제거
+df.drop(columns=['car','mpg'])
+
+# 열 추가
+df['new'] = df['mpg'] + 10
+
+# 데이터 필터링
+cond1 = (df['cyl'] == 1)
+len(df[cond1])
+
+df[ df['cyl']==4 ]: df 안에 cy1==4인 것들 뽑아줘
+
+cond2 = (df['mpg'] >= 22)
+
+# 2개 조건 필터링
+and: df[cond1 & cond2]
+
+or: df[cond1 | cond2]
+
+# 데이터 정렬
+df.sort_values('mpg', ascending=False) : 내림차순 정렬
+df.sort_values('mpg', ascending=True) : 오름차순 정렬
+
+# 데이터 변경(조건문)
+# np.where 활용
+# hp 변수 값중에서 205가 넘는 값은 205로 처리하고 나머지는 그대로 유지
+df['hp'] = np.where(df['np'] >= 205, 205, df['hp'])
+
+
+# 결측치, 이상치, 중복값 처리(제거 or 대체)
+
+# 결측치 확인
+df.isnull().sum()
+# 결측치 제거
+df.dropna(axis=0) 행 기준
+# 결측치 대체
+df['age'] = df['age'].fillna(df['age'].mean())
+df.isnull().sum()
+
+# 이상치 확인 및 처리
+Q1 = df['age'].quantile(0.25)
+Q3 = df['age'].quantile(0.75)
+IQR = Q3 - Q1
+
+upper = Q3 + 1.5 * IQR
+lower = Q1 - 1.5 * IQR
+
+# 문제: age 변수의 이상치를 제외한 데이터 수는?
+cond1 = (df['age'] <= upper) # 부호주의
+cond2 = (df['age'] >= lower) # 부호주의
+print(len(df[cond1 & cond2]))
+
+# 표준정규분포 (이상치 +- 3Z값을 넘어가는 값) 이건 문제 마다 다름
+# 데이터 표준화, Z = (개별값 - 평균) / 표준편차 Z-score
+
+# 중복값을 제외하고 df1 변수에 넣어주세요(아직 나온 적 없음)
+df1 = df.drop_duplicates()
+
+# 데이터 scaling(데이터 표준화, 정규화)
+
+# 표준화
+from sklearn.preprocessing import StandardScaler
+
+# 정규화
+from sklearn.preprocessing import MinMaxScaler
+
+# 데이터 합치기(아직 나온적 없음)
+df_sum = pd.concat([df1, df2], axis = 0) # 행 방향으로 데이터 결합
+
+# 날짜/시간 데이터, index 다루기 (1h 8min)
+# 날짜 데이터 타입을 datetime으로 타입을 변경
+# df['날짜'] = pd.to_datetime(df['날짜'])
+
+# 년, 월, 일 변수(열) 추가하기
+df['year'] = df['날짜'].dt.year
+df['month'] = df['날짜'].dt.month
+df['day'] = df['날짜'].dt.day
+
+# 날짜 구간 필터링, 날짜 시간이 함께 있으면 날짜와 시간을 같이 써야된다.
+df [df['날짜'].between('2023-01-01', '2023-02-23')] # 좌우 모두 포함
+df [df['날짜'].between('2023-01-01 12:00:00', '2023-01-01 12:40:00')] # 좌우 모두 포함
+
+# 날짜가 인덱스로 설정된 경우 아니면 안됨
+df = df.set_index('날짜') drop=false 옵션은 인덱스로 설정하는데, 변수로도 남겨두겠다는거
+df.loc['2023-01-05' : '2023-02-23']
+df.loc[ (df.index >= '2023-01-05') & (df.indx<='2023-02-23') ]
+
+# 시간 다루기
+# 시간이 변수로 있는 경우 between 함수 사용 가능
+
+# 시간이 index로 사용되는 경우
+df.between_time(start_time='00:00:00', end_time='00:00:00') # 날짜와 상관없이 특정 시간대를 필터링 해야할 때, 시간이 인덱스에 위치해야함!!
+
