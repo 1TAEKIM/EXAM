@@ -74,6 +74,7 @@ df['hp'] = np.where(df['np'] >= 205, 205, df['hp'])
 df.isnull().sum()
 # 결측치 제거
 df.dropna(axis=0) 행 기준
+df.dropna(subset=['칼럼']) # 이러면 칼럼에 있는 결측치 행만 제거
 # 결측치 대체
 df['age'] = df['age'].fillna(df['age'].mean())
 df.isnull().sum()
