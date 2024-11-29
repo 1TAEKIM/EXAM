@@ -5,6 +5,9 @@ df1.dtypes
 df1 = df.copy() # copy() 사용 안하면 안됨
 df1 = df1.astype({'칼럼명' : '자료형'})
 
+# 데이터 기초통계량 확인
+df.describe(include='category') # category 타입 변수 기초통계량 확인
+
 # 기초 통계량 구하기
 mpg_mean = df['mpg'].mean()
 mpg_median = df['mpg'].median()
@@ -132,4 +135,74 @@ df.loc[ (df.index >= '2023-01-05') & (df.indx<='2023-02-23') ]
 
 # 시간이 index로 사용되는 경우
 df.between_time(start_time='00:00:00', end_time='00:00:00') # 날짜와 상관없이 특정 시간대를 필터링 해야할 때, 시간이 인덱스에 위치해야함!!
+
+
+
+
+====================================================
+
+유형3 선형회귀 함수
+
+# 유의한 변수는 P-value 0.05보다 작으면(상수항은 평가하지 않는다)
+
+# 독립변수 설정
+X = df[['Pclass', 'age', 'Parch']]
+y = df['surivived']
+
+# 모델링 Logit 함수
+import statsmodels.api as sm
+
+X = sm.add_constant(X) # 상수항 추가(조건에서 추가하지 말라고 하면 추가 x)
+model_logit = sm.Logit(y, X).fit() # 주의!! Logit은 y, x순
+summary = model_logit.summary()
+
+
+# 만약 age변수가 5단위 증가하면 오즈비는 몇 배 증가?
+result = np.exp(5 * model_logit.params)
+print(round(result, 2))
+
+==================================================
+# 체험 문제 3유형 1번 문제
+# Gender와 Survived 변수 간의 독립성 검정을 실시하였을 때, 카이제곱 통계량은?
+from scipy.stats import chi2_contingency, ttest_1samp, ttest_ind, ttest_rel, chisquare
+table = pd.crosstab(df['Gender'], df['Survived'])
+print(chi2_contingency(table))
+
+# 체험 문제 3유형 2번 문제
+# Gender, SibSp, Parch를 독립변수로 사용하여 로지스틱 회귀모형을 실시하였을 때,
+# Parch 변수의 계수값은?
+
+from statsmodels.api import Logit
+from sklearn.preprocessing import LabelEncoder
+import statsmodels.api as sm
+
+# 모델 생성시 object 자료형이 있으면 안되기 때문
+encoder = LabelEncoder()
+df['Gender'] = encoder.fit_transform(df['Gender'])
+
+X = df[['Gender', 'SipSp', 'Parch']]
+X = sm.add_constant(X) # 상수(Intercept, 절편) 값도 고려해야되기 때문
+y = df['Survived']
+
+model = Logit(y, X) # 순서 유의!!!
+result = model.fit()
+print(result.summary())
+
+
+# 쉬운 풀이!! #########
+# Logit(로지스틱 회귀모형), OLS(선형회귀 모형)
+from statsmodels.api import Logit, OLS
+
+formula = "Survived ~ Gender + SipSp + Parch"
+results = Logit.from_formula(formula, df).fit() # 얘는 알아서 절편을 추가해줌, 범주형 변수도 알아서 계산해줌
+print(results.summary())
+
+
+# 3번 오즈비 구하기
+print(np.exp(-0.3539))
+
+===============================================================
+# 수치형은 StandardScaler()
+# object는 LabelEncoder(), 
+# X_full = pd.get_dummies(X_full) one-hot 인코딩은 범주형 변수 알아서해줌
 
