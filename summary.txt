@@ -1,6 +1,21 @@
 # 데이터 타입 출력
 df1.dtypes
 
+================================================================================================
+cat_feat = df.select_dtypes('object', 'category').columns.values
+print(cat_feat)
+df_cat = df.copy()
+
+df_cat['Department'].value_counts()
+
+# 3번 문제
+# 데이터셋에서 숫자형인 칼럼만 추출하여 새로운 데이터 프레임 생성하고, 각 변수간의 상관계수를 구하고, 0.9인 이상 두 개의 칼럼 찾아내어 그 중 변수하나 제거
+num_feat = df.select_dtypes('number').columns.values
+df_num = df[num_feat].copy()
+
+df_num.corr()
+================================================================================================
+
 # 데이터 타입 변경 1개
 df1 = df.copy() # copy() 사용 안하면 안됨
 df1 = df1.astype({'칼럼명' : '자료형'})
@@ -27,7 +42,7 @@ mpg_max = df['mpg'].max()
 mpg_min = df['mpg'].min()
 mpg_range = mpg_max - mpg_min
 
-# 왜도: 좌우로 비대칭
+# 왜도: 좌우로 비대칭 // 양수면 양의 왜도(평균>중앙값>최빈값), 음수면 음의 왜도(평균<중앙값<최빈값)
 mpg_skew = df['mpg'].skew()
 
 # 첨도: 위아래로 뾰족한지
@@ -80,6 +95,7 @@ df.dropna(axis=0) 행 기준
 df.dropna(subset=['칼럼']) # 이러면 칼럼에 있는 결측치 행만 제거
 # 결측치 대체
 df['age'] = df['age'].fillna(df['age'].mean())
+df['age'] = df['age'].fillna(df['age'].mode()[0]) ## 최빈값은 [0] 필수!
 df.isnull().sum()
 
 # 이상치 확인 및 처리
@@ -103,7 +119,7 @@ df1 = df.drop_duplicates()
 
 # 데이터 scaling(데이터 표준화, 정규화)
 
-# 표준화
+# 표준화 StandardScaler = Z-score
 from sklearn.preprocessing import StandardScaler
 
 # 정규화
@@ -166,13 +182,15 @@ print(round(result, 2))
 # Gender와 Survived 변수 간의 독립성 검정을 실시하였을 때, 카이제곱 통계량은?
 from scipy.stats import chi2_contingency, ttest_1samp, ttest_ind, ttest_rel, chisquare
 table = pd.crosstab(df['Gender'], df['Survived'])
-print(chi2_contingency(table))
+print(chi2_contingency(table)) or chi2_contingency([df['Gender'], df['Survived']])
 
 # 체험 문제 3유형 2번 문제
 # Gender, SibSp, Parch를 독립변수로 사용하여 로지스틱 회귀모형을 실시하였을 때,
 # Parch 변수의 계수값은?
 
-from statsmodels.api import Logit
+from statsmodels.api import Logit, OLS
+from statsmodels.formula.api import logit, ols
+
 from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
 
@@ -204,5 +222,37 @@ print(np.exp(-0.3539))
 ===============================================================
 # 수치형은 StandardScaler()
 # object는 LabelEncoder(), 
-# X_full = pd.get_dummies(X_full) one-hot 인코딩은 범주형 변수 알아서해줌
+# X_full = pd.get_dummies(X_full) one-hot 인코딩은 범주형 변수 알아서해줌, 칼럼 하나씩 지정해도 상관없음(df['age'])
+
+
+
+
+
+
+--------------------------------------------------------------------------------------------
+# 모델 평가지표 - 오차행렬
+from sklearn.metrics import confusion_matrix
+confusion_matrix(y_test, pred)
+
+# 모델 평가지표 - 평가지표계산
+from sklearn.metrics import classification_report
+rpt = classification_report(y_test, pred)
+
+# 정확도, 정밀도, 재현율, f1 score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+
+from sklearn.ensemble import RandomForestClassifier
+rf = RandomForestClassifier(n_estimators=50, max_depth=3, random_state=20)
+
+from sklearn.ensemble import RandomForestRegressor
+rfr = RandomForestRegressor()
+rfr.fit()
+
+# 기울기, y 절편
+rfr.coef_, rfr.intercept_
+
+
+
+--------------------------------------------------------------------------------
 
